@@ -47,6 +47,11 @@ template <typename T>
 void operator<<(T& out, channel<T>& ch)
 {
     if (ch.closed() && ch.empty()) {
+        if (ch.closed() && !ch.queue.empty()) {
+            std::lock_guard<decltype(ch.mtx)>(ch.mtx);
+            out = std::move(ch.queue.front());
+            ch.queue.pop();
+        }
         return;
     }
 
