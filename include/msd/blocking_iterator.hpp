@@ -4,6 +4,7 @@
 #define MSD_CHANNEL_BLOCKING_ITERATOR_HPP_
 
 #include <iterator>
+#include <mutex>
 #include <optional>
 
 namespace msd {
@@ -44,7 +45,8 @@ class blocking_iterator {
      */
     bool operator!=(blocking_iterator<channel>) const
     {
-        ch.waitBeforeRead();
+        std::unique_lock<std::mutex> lock{ch.mtx};
+        ch.waitBeforeRead(lock);
 
         return !(ch.closed() && ch.empty());
     }

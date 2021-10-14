@@ -45,19 +45,17 @@ template <typename T>
 void operator<<(std::optional<T>& out, channel<T>& ch)
 {
     if (ch.closed() && ch.empty()) {
-        if (ch.closed() && !ch.queue.empty()) {
-            std::lock_guard<decltype(ch.mtx)>(ch.mtx);
-            out = ::std::move(ch.queue.front());
-            ch.queue.pop();
-        }
         return;
     }
 
-    ch.waitBeforeRead();
+    {
+        std::unique_lock<std::mutex> lock{ch.mtx};
+        ch.waitBeforeRead(lock);
 
-    if (ch.queue.size() > 0) {
-        out = std::move(ch.queue.front());
-        ch.queue.pop();
+        if (ch.queue.size() > 0) {
+            out = std::move(ch.queue.front());
+            ch.queue.pop();
+        }
     }
     ch.cnd.notify_one();
 }
@@ -100,8 +98,7 @@ blocking_iterator<channel<T>> channel<T>::end() noexcept
 }
 
 template <typename T>
-void channel<T>::waitBeforeRead()
+void channel<T>::waitBeforeRead(std::unique_lock<std::mutex>& lock)
 {
-    std::unique_lock<std::mutex> lock{mtx};
     cnd.wait(lock, [this] { return queue.size() > 0 || closed(); });
 }
