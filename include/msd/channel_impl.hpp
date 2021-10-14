@@ -1,7 +1,5 @@
 // Copyright (C) 2021 Andrei Avram
 
-#include <utility>
-
 template <typename T>
 constexpr channel<T>::channel(const size_type capacity) : cap{capacity}, is_closed{false}
 {
@@ -44,12 +42,12 @@ void operator>>(T&& in, channel<T>& ch)
 }
 
 template <typename T>
-void operator<<(T& out, channel<T>& ch)
+void operator<<(std::optional<T>& out, channel<T>& ch)
 {
     if (ch.closed() && ch.empty()) {
         if (ch.closed() && !ch.queue.empty()) {
             std::lock_guard<decltype(ch.mtx)>(ch.mtx);
-            out = std::move(ch.queue.front());
+            out = ::std::move(ch.queue.front());
             ch.queue.pop();
         }
         return;

@@ -4,6 +4,7 @@
 #define MSD_CHANNEL_BLOCKING_ITERATOR_HPP_
 
 #include <iterator>
+#include <optional>
 
 namespace msd {
 
@@ -30,9 +31,9 @@ class blocking_iterator {
     /**
      * Returns an element from the channel.
      */
-    value_type operator*() const
+    std::optional<value_type> operator*() const
     {
-        value_type value{};
+        std::optional<value_type> value{};
         value << ch;
 
         return value;

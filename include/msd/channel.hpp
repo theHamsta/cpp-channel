@@ -9,6 +9,8 @@
 #include <mutex>
 #include <queue>
 #include <stdexcept>
+#include <utility>
+#include <optional>
 
 #include "blocking_iterator.hpp"
 
@@ -75,7 +77,7 @@ class channel {
      * @tparam Type The type of the elements.
      */
     template <typename Type>
-    friend void operator<<(Type&, channel<Type>&);
+    friend void operator<<(std::optional<Type>&, channel<Type>&);
 
     /**
      * Returns the number of elements in the channel.
